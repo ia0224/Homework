@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8-BIT 班級作業與月曆獎懲管理系統 (淺色版)</title>
+    <!-- Google Fonts: Pixel fonts for Traditional Chinese and English -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        pixel: ['"DotGothic16"', '"Press Start 2P"', 'monospace', 'sans-serif'],
+                        enPixel: ['"Press Start 2P"', 'monospace']
+                    },
+                    colors: {
+                        pixelLight: {
+                            bg: '#f4f1ea',
+                            card: '#ffffff',
+                            header: '#e2dacb',
+                            border: '#2b2b2b',
+                            shadow: '#333333',
+                            text: '#222222',
+                            muted: '#666666',
+                            accent: '#eab308'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'DotGothic16', monospace, sans-serif;
+            background-color: #f4f1ea;
+            color: #222222;
+            background-image: 
+                radial-gradient(#e2dacb 20%, transparent 20%),
+                radial-gradient(#e2dacb 20%, transparent 20%);
+            background-size: 16px 16px;
+            background-position: 0 0, 8px 8px;
+        }
+
+        /* Pixel Light retro box styling */
+        .pixel-box {
+            background-color: #ffffff;
+            border: 3px solid #2b2b2b;
+            box-shadow: 4px 4px 0px #2b2b2b;
+            position: relative;
+        }
+
+        .pixel-box-inset {
+            background-color: #f8f6f0;
+            border: 2px solid #2b2b2b;
+            box-shadow: inset 2px 2px 0px rgba(0,0,0,0.06);
+        }
+
+        .pixel-btn {
+            border: 2px solid #2b2b2b;
+            box-shadow: 3px 3px 0px #2b2b2b;
+            transition: all 0.08s ease;
+            font-family: 'DotGothic16', sans-serif;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .pixel-btn:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0px #2b2b2b;
+        }
+
+        .pixel-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #2b2b2b;
+        }
+
+        /* Buttons palette in light mode */
+        .pixel-btn-yellow { background-color: #fef08a; color: #1e1e1e; }
+        .pixel-btn-green { background-color: #86efac; color: #1e1e1e; }
+        .pixel-btn-red { background-color: #fca5a5; color: #1e1e1e; }
+        .pixel-btn-blue { background-color: #93c5fd; color: #1e1e1e; }
+        .pixel-btn-purple { background-color: #d8b4fe; color: #1e1e1e; }
+        .pixel-btn-gray { background-color: #e5e7eb; color: #374151; }
+
+        /* Pixel Input & Select elements */
+        .pixel-input, .pixel-select {
+            background-color: #ffffff;
+            color: #111827;
+            border: 2px solid #2b2b2b;
+            padding: 6px 10px;
+            outline: none;
+            box-shadow: inset 2px 2px 0px rgba(0,0,0,0.08);
+        }
+
+        .pixel-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg fill='%232b2b2b' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            padding-right: 30px;
+        }
+
+        .pixel-input:focus, .pixel-select:focus {
+            border-color: #d97706;
+            background-color: #fffbeb;
+        }
+
+        /* Group Border and Badge Dynamic Styles */
+        .group-border-1 { border-color: #ef4444 !important; background-color: #fef2f2; }
+        .group-border-2 { border-color: #3b82f6 !important; background-color: #eff6ff; }
+        .group-border-3 { border-color: #10b981 !important; background-color: #ecfdf5; }
+        .group-border-4 { border-color: #f59e0b !important; background-color: #fffbe0; }
+        .group-border-5 { border-color: #8b5cf6 !important; background-color: #f5f3ff; }
+        .group-border-6 { border-color: #ec4899 !important; background-color: #fdf2f8; }
+
+        .group-badge-1 { background-color: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+        .group-badge-2 { background-color: #dbeafe; color: #1e40af; border: 1px solid #3b82f6; }
+        .group-badge-3 { background-color: #d1fae5; color: #065f46; border: 1px solid #10b981; }
+        .group-badge-4 { background-color: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
+        .group-badge-5 { background-color: #ede9fe; color: #5b21b6; border: 1px solid #8b5cf6; }
+        .group-badge-6 { background-color: #fce7f3; color: #9d174d; border: 1px solid #ec4899; }
+
+        /* Status Badge Colors */
+        .status-done { background-color: #bbf7d0; color: #14532d; border: 1px solid #22c55e; }
+        .status-fix { background-color: #fef08a; color: #713f12; border: 1px solid #eab308; }
+        .status-miss { background-color: #fecaca; color: #7f1d1d; border: 1px solid #ef4444; }
+        .status-leave { background-color: #e9d5ff; color: #581c87; border: 1px solid #a855f7; }
+        .status-exempt { background-color: #e2e8f0; color: #334155; border: 1px solid #64748b; }
+
+        /* Calendar Grid Styles */
+        .calendar-day-cell {
+            border: 2px solid #2b2b2b;
+            min-height: 80px;
+            background-color: #ffffff;
+            transition: all 0.1s ease;
+            cursor: pointer;
+        }
+
+        .calendar-day-cell:hover {
+            background-color: #fef08a;
+            transform: scale(1.02);
+            z-index: 10;
+        }
+
+        .calendar-day-cell.selected-day {
+            background-color: #fde047 !important;
+            border-width: 3px !important;
+            box-shadow: inset 0 0 0 2px #d97706;
+        }
+
+        .calendar-day-cell.other-month {
+            background-color: #f3f4f6;
+            color: #9ca3af;
+            opacity: 0.6;
+        }
+
+        .calendar-day-cell.today {
+            border-color: #d97706 !important;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2dacb;
+            border: 2px solid #2b2b2b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fbbf24;
+            border: 2px solid #2b2b2b;
+        }
+
+        .toggle-arrow {
+            transition: transform 0.2s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-3 md:p-6 text-base leading-relaxed">
+
+    <header class="max-w-7xl mx-auto mb-6">
+        <div class="pixel-box bg-gradient-to-r from-amber-100 via-orange-100 to-yellow-100 p-4 md:p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <span class="text-3xl md:text-4xl">🎒</span>
+                <div>
+                    <h1 class="text-xl md:text-3xl font-bold tracking-wide text-amber-900 font-pixel">CLASS MASTER 8-BIT</h1>
+                    <p class="text-xs md:text-sm text-amber-800 font-pixel mt-0.5">淺色點陣風：月曆作業檢閱、分組缺交追蹤與學生獎懲管理</p>
+                </div>
+            </div>
+            <!-- Top Controls -->
+            <div class="flex items-center space-x-2">
+                <button onclick="resetToDefaultData()" class="pixel-btn pixel-btn-red text-xs px-3 py-2" title="恢復重置初始範例資料">
+                    🔄 重置範例資料
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto">
+        <!-- Navigation Tabs -->
+        <nav class="flex flex-wrap gap-2 mb-6" id="nav-tabs">
+            <button onclick="switchTab('homework')" id="tab-btn-homework" class="pixel-btn pixel-btn-yellow text-sm md:text-base px-4 py-2 font-bold">
+                📚 作業檢閱與管理
+            </button>
+            <button onclick="switchTab('calendar')" id="tab-btn-calendar" class="pixel-btn pixel-btn-gray text-sm md:text-base px-4 py-2 font-bold">
+                📅 月曆查閱作業
+            </button>
+            <button onclick="switchTab('group-miss')" id="tab-btn-group-miss" class="pixel-btn pixel-btn-gray text-sm md:text-base px-4 py-2 font-bold">
+                🔍 分組缺交/訂正查閱
+            </button>
+            <button onclick="switchTab('students')" id="tab-btn-students" class="pixel-btn pixel-btn-gray text-sm md:text-base px-4 py-2 font-bold">
+                👨‍🎓 學生名冊與分組管理
+            </button>
+            <button onclick="switchTab('punish')" id="tab-btn-punish" class="pixel-btn pixel-btn-gray text-sm md:text-base px-4 py-2 font-bold">
+                ✏️ 罰寫項目與檢視
+            </button>
+        </nav>
+
+        <!-- ================= PAGE 1: HOMEWORK MANAGEMENT ================= -->
+        <section id="page-homework" class="space-y-6">
+            <div class="pixel-box p-4 flex flex-wrap justify-between items-center gap-4 bg-amber-50">
+                <h2 class="text-lg md:text-xl font-bold text-amber-900 flex items-center gap-2">
+                    <span>📋</span> 作業列表 (點擊 ▼ 可展開分組彩色卡片名單)
+                </h2>
+                <button onclick="openModal('add-hw-modal')" class="pixel-btn pixel-btn-green text-sm px-4 py-2">
+                    ➕ 發佈新作業
+                </button>
+            </div>
+
+            <!-- Homework Accordion List -->
+            <div id="homework-list-container" class="space-y-4">
+                <!-- Dynamic Homework Cards inserted here -->
+            </div>
+        </section>
+
+        <!-- ================= PAGE 2: CALENDAR VIEW ================= -->
+        <section id="page-calendar" class="hidden space-y-6">
+            <div class="pixel-box p-4 bg-amber-50 flex flex-wrap justify-between items-center gap-4">
+                <div class="flex items-center space-x-3">
+                    <h2 class="text-lg md:text-xl font-bold text-amber-900 flex items-center gap-2">
+                        <span>📅</span> 月曆作業查閱 (點擊日期即可查看當日作業狀況)
+                    </h2>
+                </div>
+                <!-- Month Navigator Controls -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="navigateMonth(-1)" class="pixel-btn pixel-btn-gray text-xs px-3 py-1.5 font-bold">◀ 上個月</button>
+                    <span id="calendar-month-year-title" class="font-bold text-amber-950 px-2 font-pixel text-sm md:text-base">2026 年 09 月</span>
+                    <button onclick="navigateMonth(1)" class="pixel-btn pixel-btn-gray text-xs px-3 py-1.5 font-bold">下個月 ▶</button>
+                    <button onclick="jumpToToday()" class="pixel-btn pixel-btn-yellow text-xs px-3 py-1.5 font-bold ml-2">回到今天</button>
+                </div>
+            </div>
+
+            <!-- Calendar Grid Box -->
+            <div class="pixel-box p-4 bg-white space-y-4">
+                <!-- Weekday Headers -->
+                <div class="grid grid-cols-7 gap-1 text-center font-bold text-xs md:text-sm text-amber-900 border-b-2 border-black pb-2">
+                    <div class="text-red-600">日</div>
+                    <div>一</div>
+                    <div>二</div>
+                    <div>三</div>
+                    <div>四</div>
+                    <div>五</div>
+                    <div class="text-blue-600">六</div>
+                </div>
+
+                <!-- Calendar Days Grid -->
+                <div id="calendar-days-grid" class="grid grid-cols-7 gap-1.5">
+                    <!-- Dynamic Calendar Cells -->
+                </div>
+            </div>
+
+            <!-- Selected Date Homework Panel -->
+            <div class="pixel-box p-4 bg-amber-50 space-y-4">
+                <div class="flex justify-between items-center border-b-2 border-black pb-2">
+                    <h3 class="text-base md:text-lg font-bold text-amber-950 flex items-center gap-2">
+                        <span>📌</span> 選定日期作業詳情：<span id="selected-date-display" class="text-amber-800 underline">請點擊上方月曆日期</span>
+                    </h3>
+                    <span id="selected-date-hw-count" class="text-xs font-bold px-2.5 py-1 rounded bg-amber-200 border border-amber-500 text-amber-900">
+                        0 項作業
+                    </span>
+                </div>
+
+                <div id="selected-date-homework-container" class="space-y-4">
+                    <!-- Dynamic Homework for selected date -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 3: GROUP MISSING HOMEWORK ================= -->
+        <section id="page-group-miss" class="hidden space-y-6">
+            <div class="pixel-box p-4 bg-amber-50 space-y-3">
+                <div class="flex flex-wrap justify-between items-center gap-4">
+                    <h2 class="text-lg md:text-xl font-bold text-amber-900 flex items-center gap-2">
+                        <span>🔍</span> 分組缺交與待訂正作業查閱視圖
+                    </h2>
+                    <!-- Group Filter Select -->
+                    <div class="flex items-center space-x-2">
+                        <label class="text-xs font-bold text-gray-700">選擇組別：</label>
+                        <select id="group-filter-select" onchange="renderGroupMissingView()" class="pixel-select text-sm font-bold">
+                            <option value="1">第 1 組</option>
+                            <option value="2">第 2 組</option>
+                            <option value="3">第 3 組</option>
+                            <option value="4">第 4 組</option>
+                            <option value="5">第 5 組</option>
+                            <option value="6">第 6 組</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="text-xs text-amber-800">
+                    💡 提示：本區專為組長與教師催繳設計，快速一目瞭然該組哪些同學有未完成（缺交/訂正）的作業。
+                </p>
+            </div>
+
+            <!-- Missing items content container -->
+            <div id="group-missing-container" class="space-y-4">
+                <!-- Dynamic Content -->
+            </div>
+        </section>
+
+        <!-- ================= PAGE 4: STUDENTS & GROUPS ================= -->
+        <section id="page-students" class="hidden space-y-6">
+            <div class="pixel-box p-4 flex flex-wrap justify-between items-center gap-4 bg-amber-50">
+                <div class="flex items-center space-x-3">
+                    <h2 class="text-lg md:text-xl font-bold text-amber-900 flex items-center gap-2">
+                        <span>👨‍🎓</span> 學生名冊與個人歷程
+                    </h2>
+                    <!-- Student Roster Filter -->
+                    <select id="roster-group-filter" onchange="renderStudents()" class="pixel-select text-xs">
+                        <option value="all">顯示全班學生</option>
+                        <option value="1">只看第 1 組</option>
+                        <option value="2">只看第 2 組</option>
+                        <option value="3">只看第 3 組</option>
+                        <option value="4">只看第 4 組</option>
+                        <option value="5">只看第 5 組</option>
+                        <option value="6">只看第 6 組</option>
+                    </select>
+                </div>
+                <button onclick="openModal('add-student-modal')" class="pixel-btn pixel-btn-blue text-sm px-4 py-2">
+                    ➕ 新增學生
+                </button>
+            </div>
+
+            <!-- Student Grid -->
+            <div id="student-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Dynamic Student Cards inserted here -->
+            </div>
+        </section>
+
+        <!-- ================= PAGE 5: PUNISHMENT MANAGEMENT ================= -->
+        <section id="page-punish" class="hidden space-y-6">
+            <div class="pixel-box p-4 flex flex-wrap justify-between items-center gap-4 bg-amber-50">
+                <h2 class="text-lg md:text-xl font-bold text-amber-900 flex items-center gap-2">
+                    <span>✏️</span> 罰寫項目登記與追蹤檢視
+                </h2>
+                <button onclick="openModal('add-punish-modal')" class="pixel-btn pixel-btn-red text-sm px-4 py-2">
+                    ➕ 新增罰寫項目
+                </button>
+            </div>
+
+            <!-- Punishment Cards -->
+            <div id="punish-list-container" class="space-y-4">
+                <!-- Dynamic Punishment items inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- ================= MODALS SECTION ================= -->
+
+    <!-- Modal 1: Add Homework -->
+    <div id="add-hw-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="pixel-box bg-white w-full max-w-lg p-6 space-y-4">
+            <div class="flex justify-between items-center border-b-2 border-black pb-2">
+                <h3 class="text-lg font-bold text-amber-800">➕ 發佈新作業</h3>
+                <button onclick="closeModal('add-hw-modal')" class="text-gray-500 hover:text-black font-bold text-xl">✕</button>
+            </div>
+            
+            <form id="add-hw-form" onsubmit="handleCreateHomework(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-amber-900 mb-1">作業名稱 / 科目：</label>
+                    <input type="text" id="hw-title" required placeholder="例如：數學講義 P.24-25" class="pixel-input w-full text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-amber-900 mb-1">繳交日期：</label>
+                    <input type="date" id="hw-date" required class="pixel-input w-full text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-amber-900 mb-1">發佈對象：</label>
+                    <select id="hw-assign-type" onchange="toggleAssignStudentsVisibility('hw')" class="pixel-select w-full text-sm mb-2">
+                        <option value="all">全班學生</option>
+                        <option value="custom">指定特定學生 (個人/多位)</option>
+                    </select>
+                    <div id="hw-custom-students-box" class="hidden pixel-box-inset p-3 max-h-40 overflow-y-auto space-y-1">
+                        <p class="text-xs text-gray-600 mb-2">請勾選要指派的學生：</p>
+                        <div id="hw-students-checkboxes" class="grid grid-cols-2 gap-2 text-sm">
+                            <!-- Checkboxes generated dynamically -->
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('add-hw-modal')" class="pixel-btn pixel-btn-gray px-4 py-2 text-xs">取消</button>
+                    <button type="submit" class="pixel-btn pixel-btn-green px-4 py-2 text-xs">確認發佈</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2: Add/Edit Student -->
+    <div id="add-student-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="pixel-box bg-white w-full max-w-md p-6 space-y-4">
+            <div class="flex justify-between items-center border-b-2 border-black pb-2">
+                <h3 id="student-modal-title" class="text-lg font-bold text-amber-800">➕ 新增學生資訊</h3>
+                <button onclick="closeModal('add-student-modal')" class="text-gray-500 hover:text-black font-bold text-xl">✕</button>
+            </div>
+            
+            <form onsubmit="handleSaveStudent(event)" class="space-y-4">
+                <input type="hidden" id="edit-student-id">
+                <div>
+                    <label class="block text-xs font-bold text-amber-900 mb-1">座號：</label>
+                    <input type="number" id="student-number" min="1" required placeholder="例如：1" class="pixel-input w-full text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-amber-900 mb-1">學生姓名：</label>
+                    <input type="text" id="student-name" required placeholder="例如：張小明" class="pixel-input w-full text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-amber-900 mb-1">所屬分組：</label>
+                    <select id="student-group" class="pixel-select w-full text-sm">
+                        <option value="1">第 1 組</option>
+                        <option value="2">第 2 組</option>
+                        <option value="3">第 3 組</option>
+                        <option value="4">第 4 組</option>
+                        <option value="5">第 5 組</option>
+                        <option value="6">第 6 組</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('add-student-modal')" class="pixel-btn pixel-btn-gray px-4 py-2 text-xs">取消</button>
+                    <button type="submit" class="pixel-btn pixel-btn-blue px-4 py-2 text-xs">儲存學生</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 3: Point Adjustment -->
+    <div id="add-point-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="pixel-box bg-white w-full max-w-md p-6 space-y-4">
+            <div class="flex justify-between items-center border-b-2 border-black pb-2">
+                <h3 class="text-lg font-bold text-amber-800">🪙 個人加扣點登記</h3>
+                <button onclick="closeModal('add-point-modal')" class="text-gray-500 hover:text-black font-bold text-xl">✕</button>
+            </div>
+            
+            <form onsubmit="handlePointAdjustment(event)" class="space-y-4">
+                <input type="hidden" id="point-student-id">
+                <div>
+                    <span class="text-xs text-gray-600">學生：</span>
+                    <span id="point-student-name" class="font-bold text-amber-900 text-sm"></span>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-amber-900 mb-1">類型與點數：</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="point-type" class="pixel-select text-sm">
+                            <option value="add">➕ 加點 (+)</option>
+                            <option value="sub">➖ 扣點 (-)</option>
+                        </select>
+                        <input type="number" id="point-value" min="1" value="1" required class="pixel-input text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-amber-900 mb-1">事由 / 說明：</label>
+                    <input type="text" id="point-reason" required placeholder="例如：熱心助人、秩序不良..." class="pixel-input w-full text-sm">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('add-point-modal')" class="pixel-btn pixel-btn-gray px-4 py-2 text-xs">取消</button>
+                    <button type="submit" class="pixel-btn pixel-btn-yellow px-4 py-2 text-xs">確定登記</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 4: Add Punishment -->
+    <div id="add-punish-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="pixel-box bg-white w-full max-w-lg p-6 space-y-4">
+            <div class="flex justify-between items-center border-b-2 border-black pb-2">
+                <h3 class="text-lg font-bold text-red-700">✏️ 新增罰寫項目</h3>
+                <button onclick="closeModal('add-punish-modal')" class="text-gray-500 hover:text-black font-bold text-xl">✕</button>
+            </div>
+            
+            <form onsubmit="handleCreatePunishment(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-amber-900 mb-1">罰寫內容 / 項目：</label>
+                    <input type="text" id="punish-title" required placeholder="例如：國語第一課課文一遍" class="pixel-input w-full text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-amber-900 mb-1">截止日期 / 備註：</label>
+                    <input type="text" id="punish-note" placeholder="例如：明日抽查" class="pixel-input w-full text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-amber-900 mb-1">指派對象：</label>
+                    <select id="punish-assign-type" onchange="toggleAssignStudentsVisibility('punish')" class="pixel-select w-full text-sm mb-2">
+                        <option value="custom">指定特定學生 (個人/多位)</option>
+                        <option value="all">全班學生</option>
+                    </select>
+                    <div id="punish-custom-students-box" class="pixel-box-inset p-3 max-h-40 overflow-y-auto space-y-1">
+                        <p class="text-xs text-gray-600 mb-2">請勾選要罰寫的學生：</p>
+                        <div id="punish-students-checkboxes" class="grid grid-cols-2 gap-2 text-sm">
+                            <!-- Checkboxes generated dynamically -->
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('add-punish-modal')" class="pixel-btn pixel-btn-gray px-4 py-2 text-xs">取消</button>
+                    <button type="submit" class="pixel-btn pixel-btn-red px-4 py-2 text-xs">發佈罰寫</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 5: View Student Detail History -->
+    <div id="student-detail-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="pixel-box bg-white w-full max-w-xl p-6 space-y-4 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b-2 border-black pb-2">
+                <h3 class="text-lg font-bold text-amber-800 flex items-center gap-2">
+                    <span>📜</span> <span id="detail-student-title">學生個人檔案</span>
+                </h3>
+                <button onclick="closeModal('student-detail-modal')" class="text-gray-500 hover:text-black font-bold text-xl">✕</button>
+            </div>
+            
+            <div class="overflow-y-auto space-y-4 pr-1 flex-1">
+                <!-- Section 1: Points History -->
+                <div>
+                    <h4 class="text-sm font-bold text-amber-900 mb-2 border-b border-gray-300 pb-1">🪙 加扣點紀錄歷程</h4>
+                    <div id="detail-points-list" class="space-y-1.5 text-xs">
+                        <!-- Dynamic list -->
+                    </div>
+                </div>
+
+                <!-- Section 2: Punishments Assigned -->
+                <div>
+                    <h4 class="text-sm font-bold text-red-700 mb-2 border-b border-gray-300 pb-1">✏️ 名下所有罰寫項目</h4>
+                    <div id="detail-punish-list" class="space-y-2 text-xs">
+                        <!-- Dynamic list -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-black">
+                <button onclick="closeModal('student-detail-modal')" class="pixel-btn pixel-btn-gray px-4 py-2 text-xs">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        const STORAGE_KEY = 'PIXEL_CLASS_MANAGER_LIGHT_CALENDAR_V3';
+
+        // Helper: Get YYYY-MM-DD
+        function formatDateString(year, month, day) {
+            const y = year;
+            const m = String(month).padStart(2, '0');
+            const d = String(day).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function getTodayString() {
+            const now = new Date();
+            return formatDateString(now.getFullYear(), now.getMonth() + 1, now.getDate());
+        }
+
+        // Helper: Get Offset Date YYYY-MM-DD
+        function getOffsetDateString(offsetDays) {
+            const d = new Date();
+            d.setDate(d.getDate() + offsetDays);
+            return formatDateString(d.getFullYear(), d.getMonth() + 1, d.getDate());
+        }
+
+        // Calendar state
+        let currentCalYear = new Date().getFullYear();
+        let currentCalMonth = new Date().getMonth() + 1; // 1 - 12
+        let selectedCalendarDate = getTodayString();
+
+        // Initial Sample Data
+        const DEFAULT_DATA = {
+            students: [
+                { id: 's1', number: 1, name: '張小明', group: 1, points: 5 },
+                { id: 's2', number: 2, name: '林小華', group: 1, points: -2 },
+                { id: 's3', number: 3, name: '陳小美', group: 2, points: 10 },
+                { id: 's4', number: 4, name: '王阿強', group: 2, points: 0 },
+                { id: 's5', number: 5, name: '李大同', group: 3, points: 3 },
+                { id: 's6', number: 6, name: '趙子龍', group: 3, points: 7 }
+            ],
+            pointLogs: [
+                { id: 'pl1', studentId: 's1', type: 'add', value: 5, reason: '主動整理教室環境', date: getTodayString() },
+                { id: 'pl2', studentId: 's2', type: 'sub', value: 2, reason: '上課鐘響延遲進教室', date: getTodayString() },
+                { id: 'pl3', studentId: 's3', type: 'add', value: 10, reason: '代表班級參加朗讀比賽獲獎', date: getTodayString() }
+            ],
+            homeworks: [
+                {
+                    id: 'hw1',
+                    title: '國語國字注音第八課練習單',
+                    date: getTodayString(),
+                    assignedStudentIds: ['s1', 's2', 's3', 's4', 's5', 's6'],
+                    records: {
+                        's1': '完成',
+                        's2': '訂正',
+                        's3': '完成',
+                        's4': '缺交',
+                        's5': '完成',
+                        's6': '缺交'
+                    }
+                },
+                {
+                    id: 'hw2',
+                    title: '數學習作 P.42 ~ P.45',
+                    date: getTodayString(),
+                    assignedStudentIds: ['s1', 's2', 's3', 's4', 's5', 's6'],
+                    records: {
+                        's1': '完成',
+                        's2': '缺交',
+                        's3': '完成',
+                        's4': '免繳',
+                        's5': '訂正',
+                        's6': '完成'
+                    }
+                },
+                {
+                    id: 'hw3',
+                    title: '英語 Reading Worksheet Unit 4',
+                    date: getOffsetDateString(-2),
+                    assignedStudentIds: ['s1', 's2', 's3', 's4', 's5', 's6'],
+                    records: {
+                        's1': '完成',
+                        's2': '完成',
+                        's3': '完成',
+                        's4': '完成',
+                        's5': '缺交',
+                        's6': '請假'
+                    }
+                },
+                {
+                    id: 'hw4',
+                    title: '自然觀察記錄表（植物發芽）',
+                    date: getOffsetDateString(2),
+                    assignedStudentIds: ['s1', 's3', 's5'],
+                    records: {
+                        's1': '缺交',
+                        's3': '完成',
+                        's5': '缺交'
+                    }
+                }
+            ],
+            punishments: [
+                {
+                    id: 'p1',
+                    title: '訂正國語考卷並請家長簽名',
+                    note: '限明日放學前',
+                    assignments: [
+                        { studentId: 's2', done: false },
+                        { studentId: 's4', done: true },
+                        { studentId: 's6', done: false }
+                    ]
+                }
+            ]
+        };
+
+        let appData = { ...DEFAULT_DATA };
+
+        function loadData() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    appData = JSON.parse(saved);
+                } catch (e) {
+                    console.error('Failed to load saved data', e);
+                    appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                }
+            } else {
+                appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        }
+
+        function resetToDefaultData() {
+            if (confirm('確定要恢復為初始範例資料嗎？您目前的資料將會被覆蓋。')) {
+                appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                saveData();
+                renderAll();
+            }
+        }
+
+        function switchTab(tabName) {
+            document.getElementById('page-homework').classList.add('hidden');
+            document.getElementById('page-calendar').classList.add('hidden');
+            document.getElementById('page-group-miss').classList.add('hidden');
+            document.getElementById('page-students').classList.add('hidden');
+            document.getElementById('page-punish').classList.add('hidden');
+
+            const btnClass = "pixel-btn pixel-btn-gray text-sm md:text-base px-4 py-2 font-bold";
+            const activeBtnClass = "pixel-btn pixel-btn-yellow text-sm md:text-base px-4 py-2 font-bold";
+
+            document.getElementById('tab-btn-homework').className = btnClass;
+            document.getElementById('tab-btn-calendar').className = btnClass;
+            document.getElementById('tab-btn-group-miss').className = btnClass;
+            document.getElementById('tab-btn-students').className = btnClass;
+            document.getElementById('tab-btn-punish').className = btnClass;
+
+            if (tabName === 'homework') {
+                document.getElementById('page-homework').classList.remove('hidden');
+                document.getElementById('tab-btn-homework').className = activeBtnClass;
+            } else if (tabName === 'calendar') {
+                document.getElementById('page-calendar').classList.remove('hidden');
+                document.getElementById('tab-btn-calendar').className = activeBtnClass;
+                renderCalendar();
+            } else if (tabName === 'group-miss') {
+                document.getElementById('page-group-miss').classList.remove('hidden');
+                document.getElementById('tab-btn-group-miss').className = activeBtnClass;
+                renderGroupMissingView();
+            } else if (tabName === 'students') {
+                document.getElementById('page-students').classList.remove('hidden');
+                document.getElementById('tab-btn-students').className = activeBtnClass;
+            } else if (tabName === 'punish') {
+                document.getElementById('page-punish').classList.remove('hidden');
+                document.getElementById('tab-btn-punish').className = activeBtnClass;
+            }
+        }
+
+        function openModal(modalId) {
+            if (modalId === 'add-hw-modal') {
+                document.getElementById('hw-date').value = selectedCalendarDate || getTodayString();
+                populateStudentCheckboxes('hw-students-checkboxes');
+            } else if (modalId === 'add-punish-modal') {
+                populateStudentCheckboxes('punish-students-checkboxes');
+            } else if (modalId === 'add-student-modal') {
+                document.getElementById('student-modal-title').textContent = '➕ 新增學生資訊';
+                document.getElementById('edit-student-id').value = '';
+                document.getElementById('student-number').value = '';
+                document.getElementById('student-name').value = '';
+                document.getElementById('student-group').value = '1';
+            }
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function populateStudentCheckboxes(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            const sorted = [...appData.students].sort((a,b) => a.number - b.number);
+            
+            if (sorted.length === 0) {
+                container.innerHTML = `<span class="text-red-500 text-xs">尚無學生資料</span>`;
+                return;
+            }
+
+            sorted.forEach(st => {
+                const label = document.createElement('label');
+                label.className = 'flex items-center space-x-2 cursor-pointer text-xs hover:text-amber-800';
+                label.innerHTML = `
+                    <input type="checkbox" value="${st.id}" class="accent-amber-600 rounded">
+                    <span>${st.number}號 ${st.name} (第${st.group || 1}組)</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        function toggleAssignStudentsVisibility(prefix) {
+            const typeSelect = document.getElementById(`${prefix}-assign-type`).value;
+            const customBox = document.getElementById(`${prefix}-custom-students-box`);
+            if (typeSelect === 'custom') {
+                customBox.classList.remove('hidden');
+            } else {
+                customBox.classList.add('hidden');
+            }
+        }
+
+        function renderHomeworks() {
+            const container = document.getElementById('homework-list-container');
+            container.innerHTML = '';
+
+            if (appData.homeworks.length === 0) {
+                container.innerHTML = `
+                    <div class="pixel-box p-8 text-center text-gray-500">
+                        目前尚未發佈任何作業。點擊右上角「➕ 發佈新作業」進行創建。
+                    </div>
+                `;
+                return;
+            }
+
+            appData.homeworks.forEach((hw) => {
+                const hwBox = document.createElement('div');
+                hwBox.className = 'pixel-box bg-white overflow-hidden';
+
+                const assignedCount = hw.assignedStudentIds.length;
+                let doneCount = 0;
+                let fixCount = 0;
+                let missCount = 0;
+
+                hw.assignedStudentIds.forEach(stId => {
+                    const status = hw.records[stId] || '缺交';
+                    if (status === '完成') doneCount++;
+                    else if (status === '訂正') fixCount++;
+                    else if (status === '缺交') missCount++;
+                });
+
+                hwBox.innerHTML = `
+                    <!-- Accordion Header -->
+                    <div onclick="toggleAccordion('${hw.id}')" class="p-4 bg-amber-50/80 border-b-2 border-black flex flex-wrap justify-between items-center cursor-pointer hover:bg-amber-100/70 transition-colors">
+                        <div class="flex items-center space-x-3">
+                            <span id="arrow-${hw.id}" class="toggle-arrow text-amber-800 font-bold text-lg">▼</span>
+                            <div>
+                                <h3 class="font-bold text-amber-950 text-base md:text-lg">${hw.title}</h3>
+                                <div class="text-xs text-amber-800 flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                                    <span>📅 繳交日期：${hw.date}</span>
+                                    <span>👥 發佈人數：${assignedCount} 人</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Chips -->
+                        <div class="flex items-center space-x-2 text-xs mt-2 sm:mt-0" onclick="event.stopPropagation()">
+                            <span class="px-2 py-0.5 rounded status-done font-bold">完成 ${doneCount}</span>
+                            <span class="px-2 py-0.5 rounded status-fix font-bold">訂正 ${fixCount}</span>
+                            <span class="px-2 py-0.5 rounded status-miss font-bold">缺交 ${missCount}</span>
+                            <button onclick="deleteHomework('${hw.id}')" class="pixel-btn pixel-btn-red text-xs px-2 py-1 ml-2" title="刪除作業">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Accordion Body: Student cards with group color borders -->
+                    <div id="content-${hw.id}" class="p-4 space-y-3 bg-white">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            ${renderStudentHwStatusSelects(hw)}
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(hwBox);
+            });
+        }
+
+        function toggleAccordion(hwId) {
+            const content = document.getElementById(`content-${hwId}`);
+            const arrow = document.getElementById(`arrow-${hwId}`);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                arrow.style.transform = 'rotate(0deg)';
+            } else {
+                content.classList.add('hidden');
+                arrow.style.transform = 'rotate(-90deg)';
+            }
+        }
+
+        function renderStudentHwStatusSelects(hw) {
+            if (hw.assignedStudentIds.length === 0) {
+                return `<div class="text-xs text-gray-500 col-span-full">無指定學生</div>`;
+            }
+
+            const assignedStudents = appData.students
+                .filter(st => hw.assignedStudentIds.includes(st.id))
+                .sort((a,b) => (a.group || 1) - (b.group || 1) || a.number - b.number);
+
+            return assignedStudents.map(st => {
+                const currentStatus = hw.records[st.id] || '缺交';
+                const groupNum = st.group || 1;
+                const groupBorderClass = `group-border-${groupNum}`;
+                const groupBadgeClass = `group-badge-${groupNum}`;
+
+                return `
+                    <div class="pixel-box-inset p-2.5 flex justify-between items-center ${groupBorderClass}">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-1.5 py-0.5 text-[10px] font-bold rounded ${groupBadgeClass}">
+                                第${groupNum}組
+                            </span>
+                            <div class="text-xs font-bold">
+                                <span class="text-amber-900 mr-1">${st.number}號</span>
+                                <span>${st.name}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Dropdown Status Select -->
+                        <select onchange="updateHomeworkStatus('${hw.id}', '${st.id}', this.value)" class="pixel-select text-xs py-1 px-2 font-bold">
+                            <option value="完成" ${currentStatus === '完成' ? 'selected' : ''}>✅ 完成</option>
+                            <option value="訂正" ${currentStatus === '訂正' ? 'selected' : ''}>⚠️ 訂正</option>
+                            <option value="缺交" ${currentStatus === '缺交' ? 'selected' : ''}>❌ 缺交</option>
+                            <option value="請假" ${currentStatus === '請假' ? 'selected' : ''}>🏖️ 請假</option>
+                            <option value="免繳" ${currentStatus === '免繳' ? 'selected' : ''}>⚪ 免繳</option>
+                        </select>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateHomeworkStatus(hwId, studentId, newStatus) {
+            const hw = appData.homeworks.find(h => h.id === hwId);
+            if (hw) {
+                hw.records[studentId] = newStatus;
+                saveData();
+                renderHomeworks();
+                if (!document.getElementById('page-calendar').classList.contains('hidden')) {
+                    renderSelectedDateHomework();
+                    renderCalendar();
+                }
+            }
+        }
+
+        function renderCalendar() {
+            const monthTitle = document.getElementById('calendar-month-year-title');
+            monthTitle.textContent = `${currentCalYear} 年 ${String(currentCalMonth).padStart(2, '0')} 月`;
+
+            const grid = document.getElementById('calendar-days-grid');
+            grid.innerHTML = '';
+
+            // First day of month & Days in month
+            const firstDayIndex = new Date(currentCalYear, currentCalMonth - 1, 1).getDay(); // 0 (Sun) - 6 (Sat)
+            const daysInMonth = new Date(currentCalYear, currentCalMonth, 0).getDate();
+            const prevMonthDays = new Date(currentCalYear, currentCalMonth - 1, 0).getDate();
+
+            const todayStr = getTodayString();
+
+            // 1. Render Previous Month Days padding
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                const dayNum = prevMonthDays - i;
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day-cell other-month p-1.5 flex flex-col justify-between';
+                cell.innerHTML = `<span class="text-xs font-bold font-enPixel">${dayNum}</span>`;
+                grid.appendChild(cell);
+            }
+
+            // 2. Render Current Month Days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = formatDateString(currentCalYear, currentCalMonth, day);
+                const dayHws = appData.homeworks.filter(h => h.date === dateStr);
+
+                const cell = document.createElement('div');
+                let cellClasses = 'calendar-day-cell p-1.5 flex flex-col justify-between';
+                
+                if (dateStr === todayStr) {
+                    cellClasses += ' today';
+                }
+                if (dateStr === selectedCalendarDate) {
+                    cellClasses += ' selected-day';
+                }
+
+                cell.className = cellClasses;
+                cell.onclick = () => selectCalendarDate(dateStr);
+
+                let badgeHtml = '';
+                if (dayHws.length > 0) {
+                    badgeHtml = `
+                        <div class="mt-1">
+                            <span class="inline-block bg-amber-800 text-yellow-200 text-[10px] font-bold px-1 py-0.5 rounded border border-black font-pixel truncate max-w-full">
+                                🔴 ${dayHws.length}項作業
+                            </span>
+                        </div>
+                    `;
+                }
+
+                cell.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs md:text-sm font-bold font-enPixel ${dateStr === todayStr ? 'text-amber-800 underline' : 'text-gray-800'}">${day}</span>
+                        ${dateStr === todayStr ? '<span class="text-[9px] bg-amber-500 text-white font-bold px-1 rounded">今</span>' : ''}
+                    </div>
+                    ${badgeHtml}
+                `;
+
+                grid.appendChild(cell);
+            }
+
+            // 3. Render Next Month Days padding to fill 35 or 42 grid cells
+            const totalCellsSoFar = firstDayIndex + daysInMonth;
+            const targetTotalCells = totalCellsSoFar > 35 ? 42 : 35;
+            const nextMonthPadding = targetTotalCells - totalCellsSoFar;
+
+            for (let i = 1; i <= nextMonthPadding; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day-cell other-month p-1.5 flex flex-col justify-between';
+                cell.innerHTML = `<span class="text-xs font-bold font-enPixel">${i}</span>`;
+                grid.appendChild(cell);
+            }
+
+            renderSelectedDateHomework();
+        }
+
+        function navigateMonth(delta) {
+            currentCalMonth += delta;
+            if (currentCalMonth > 12) {
+                currentCalMonth = 1;
+                currentCalYear++;
+            } else if (currentCalMonth < 1) {
+                currentCalMonth = 12;
+                currentCalYear--;
+            }
+            renderCalendar();
+        }
+
+        function jumpToToday() {
+            const today = new Date();
+            currentCalYear = today.getFullYear();
+            currentCalMonth = today.getMonth() + 1;
+            selectedCalendarDate = getTodayString();
+            renderCalendar();
+        }
+
+        function selectCalendarDate(dateStr) {
+            selectedCalendarDate = dateStr;
+            renderCalendar();
+        }
+
+        function renderSelectedDateHomework() {
+            document.getElementById('selected-date-display').textContent = selectedCalendarDate;
+            const container = document.getElementById('selected-date-homework-container');
+            const countBadge = document.getElementById('selected-date-hw-count');
+            container.innerHTML = '';
+
+            const hwsForDate = appData.homeworks.filter(h => h.date === selectedCalendarDate);
+            countBadge.textContent = `${hwsForDate.length} 項作業`;
+
+            if (hwsForDate.length === 0) {
+                container.innerHTML = `
+                    <div class="pixel-box p-6 text-center text-gray-500 bg-white">
+                        🗓️ ${selectedCalendarDate} 當天沒有發佈任何作業。
+                        <button onclick="openModal('add-hw-modal')" class="pixel-btn pixel-btn-green text-xs px-3 py-1 ml-2">➕ 直接新增此日作業</button>
+                    </div>
+                `;
+                return;
+            }
+
+            hwsForDate.forEach(hw => {
+                const hwBox = document.createElement('div');
+                hwBox.className = 'pixel-box bg-white p-4 space-y-3';
+
+                const assignedCount = hw.assignedStudentIds.length;
+                let doneCount = 0;
+                let fixCount = 0;
+                let missCount = 0;
+
+                hw.assignedStudentIds.forEach(stId => {
+                    const status = hw.records[stId] || '缺交';
+                    if (status === '完成') doneCount++;
+                    else if (status === '訂正') fixCount++;
+                    else if (status === '缺交') missCount++;
+                });
+
+                hwBox.innerHTML = `
+                    <div class="flex flex-wrap justify-between items-center border-b border-black pb-2 gap-2">
+                        <div>
+                            <h4 class="font-bold text-amber-950 text-base md:text-lg">${hw.title}</h4>
+                            <span class="text-xs text-amber-800">👥 發佈人數：${assignedCount} 人</span>
+                        </div>
+                        <div class="flex items-center space-x-2 text-xs">
+                            <span class="px-2 py-0.5 rounded status-done font-bold">完成 ${doneCount}</span>
+                            <span class="px-2 py-0.5 rounded status-fix font-bold">訂正 ${fixCount}</span>
+                            <span class="px-2 py-0.5 rounded status-miss font-bold">缺交 ${missCount}</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+                        ${renderStudentHwStatusSelects(hw)}
+                    </div>
+                `;
+
+                container.appendChild(hwBox);
+            });
+        }
+
+        function handleCreateHomework(e) {
+            e.preventDefault();
+            const title = document.getElementById('hw-title').value.trim();
+            const date = document.getElementById('hw-date').value;
+            const assignType = document.getElementById('hw-assign-type').value;
+
+            let assignedStudentIds = [];
+            if (assignType === 'all') {
+                assignedStudentIds = appData.students.map(s => s.id);
+            } else {
+                const checkboxes = document.querySelectorAll('#hw-students-checkboxes input[type="checkbox"]:checked');
+                checkboxes.forEach(cb => assignedStudentIds.push(cb.value));
+            }
+
+            if (assignedStudentIds.length === 0) {
+                alert('請至少選擇一位發佈對象學生！');
+                return;
+            }
+
+            const initialRecords = {};
+            assignedStudentIds.forEach(id => {
+                initialRecords[id] = '缺交';
+            });
+
+            const newHw = {
+                id: 'hw_' + Date.now(),
+                title: title,
+                date: date,
+                assignedStudentIds: assignedStudentIds,
+                records: initialRecords
+            };
+
+            appData.homeworks.unshift(newHw);
+            saveData();
+            
+            selectedCalendarDate = date;
+            const dateObj = new Date(date);
+            currentCalYear = dateObj.getFullYear();
+            currentCalMonth = dateObj.getMonth() + 1;
+
+            renderAll();
+            closeModal('add-hw-modal');
+            document.getElementById('add-hw-form').reset();
+        }
+
+        function deleteHomework(hwId) {
+            if (confirm('確定要刪除這項作業紀錄嗎？')) {
+                appData.homeworks = appData.homeworks.filter(h => h.id !== hwId);
+                saveData();
+                renderAll();
+            }
+        }
+
+        function renderGroupMissingView() {
+            const container = document.getElementById('group-missing-container');
+            const selectedGroup = parseInt(document.getElementById('group-filter-select').value) || 1;
+            container.innerHTML = '';
+
+            const groupStudents = appData.students
+                .filter(s => (s.group || 1) === selectedGroup)
+                .sort((a,b) => a.number - b.number);
+
+            if (groupStudents.length === 0) {
+                container.innerHTML = `
+                    <div class="pixel-box p-8 text-center text-gray-500">
+                        第 ${selectedGroup} 組目前無學生資料。
+                    </div>
+                `;
+                return;
+            }
+
+            groupStudents.forEach(st => {
+                const studentMissingHw = [];
+                appData.homeworks.forEach(hw => {
+                    if (hw.assignedStudentIds.includes(st.id)) {
+                        const status = hw.records[st.id] || '缺交';
+                        if (status === '缺交' || status === '訂正') {
+                            studentMissingHw.push({
+                                hwId: hw.id,
+                                title: hw.title,
+                                date: hw.date,
+                                status: status
+                            });
+                        }
+                    }
+                });
+
+                const card = document.createElement('div');
+                card.className = `pixel-box p-4 space-y-3 group-border-${selectedGroup}`;
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-black pb-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-0.5 text-xs font-bold rounded group-badge-${selectedGroup}">
+                                第${selectedGroup}組
+                            </span>
+                            <span class="font-bold text-amber-950 text-base">${st.number}號 ${st.name}</span>
+                        </div>
+                        <div>
+                            ${studentMissingHw.length > 0 
+                                ? `<span class="px-2.5 py-1 text-xs font-bold status-miss rounded">待繳/待訂正: ${studentMissingHw.length} 項</span>`
+                                : `<span class="px-2.5 py-1 text-xs font-bold status-done rounded">✨ 作業已全部完成</span>`
+                            }
+                        </div>
+                    </div>
+
+                    ${studentMissingHw.length > 0 ? `
+                        <div class="space-y-2">
+                            ${studentMissingHw.map(item => `
+                                <div class="pixel-box-inset p-2.5 flex justify-between items-center bg-white">
+                                    <div>
+                                        <p class="font-bold text-xs text-gray-800">${item.title}</p>
+                                        <p class="text-[10px] text-gray-500">繳交日期: ${item.date}</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-0.5 text-xs font-bold ${item.status === '缺交' ? 'status-miss' : 'status-fix'} rounded">
+                                            ${item.status === '缺交' ? '❌ 缺交' : '⚠️ 待訂正'}
+                                        </span>
+                                        <button onclick="quickResolveStatus('${item.hwId}', '${st.id}')" class="pixel-btn pixel-btn-green text-xs px-2 py-1">
+                                            ✅ 補繳完成
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <p class="text-xs text-gray-500 italic">該生目前沒有缺交或待訂正的作業！</p>
+                    `}
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function quickResolveStatus(hwId, studentId) {
+            const hw = appData.homeworks.find(h => h.id === hwId);
+            if (hw) {
+                hw.records[studentId] = '完成';
+                saveData();
+                renderGroupMissingView();
+                renderHomeworks();
+                renderCalendar();
+            }
+        }
+
+        function renderStudents() {
+            const container = document.getElementById('student-grid-container');
+            const groupFilter = document.getElementById('roster-group-filter').value;
+            container.innerHTML = '';
+
+            let studentsToRender = [...appData.students];
+            if (groupFilter !== 'all') {
+                const targetGroup = parseInt(groupFilter);
+                studentsToRender = studentsToRender.filter(s => (s.group || 1) === targetGroup);
+            }
+
+            studentsToRender.sort((a,b) => (a.group || 1) - (b.group || 1) || a.number - b.number);
+
+            if (studentsToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="pixel-box p-8 text-center text-gray-500 col-span-full">
+                        此篩選條件下無學生資料。
+                    </div>
+                `;
+                return;
+            }
+
+            studentsToRender.forEach(st => {
+                const groupNum = st.group || 1;
+                const groupBorderClass = `group-border-${groupNum}`;
+                const groupBadgeClass = `group-badge-${groupNum}`;
+
+                let pointColor = 'text-green-600';
+                if (st.points < 0) pointColor = 'text-red-600';
+                else if (st.points === 0) pointColor = 'text-amber-600';
+
+                const activePunishCount = appData.punishments.reduce((acc, p) => {
+                    const assign = p.assignments.find(a => a.studentId === st.id && !a.done);
+                    return acc + (assign ? 1 : 0);
+                }, 0);
+
+                const card = document.createElement('div');
+                card.className = `pixel-box p-4 space-y-3 flex flex-col justify-between ${groupBorderClass}`;
+                card.innerHTML = `
+                    <div>
+                        <!-- Header -->
+                        <div class="flex justify-between items-start border-b border-black pb-2">
+                            <div>
+                                <span class="px-1.5 py-0.5 text-[10px] font-bold rounded ${groupBadgeClass} mr-1">
+                                    第${groupNum}組
+                                </span>
+                                <span class="text-xs text-amber-900 font-bold">#${st.number}</span>
+                                <h3 class="text-lg font-bold text-gray-900 inline ml-1">${st.name}</h3>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] text-gray-500 block">總點數</span>
+                                <span class="text-xl font-bold font-enPixel ${pointColor}">${st.points > 0 ? '+' : ''}${st.points}</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 flex flex-wrap gap-2 text-xs">
+                            ${activePunishCount > 0 
+                                ? `<span class="bg-red-100 text-red-800 border border-red-400 px-2 py-0.5 rounded font-bold">未完成罰寫: ${activePunishCount}項</span>`
+                                : `<span class="bg-green-100 text-green-800 border border-green-400 px-2 py-0.5 rounded">無未完罰寫</span>`
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="pt-3 border-t border-gray-300 flex flex-wrap gap-2">
+                        <button onclick="openPointModal('${st.id}')" class="pixel-btn pixel-btn-yellow text-xs px-2 py-1.5 flex-1">
+                            🪙 加扣點
+                        </button>
+                        <button onclick="openEditStudentModal('${st.id}')" class="pixel-btn pixel-btn-blue text-xs px-2 py-1.5 flex-1">
+                            ✏️ 編輯學生
+                        </button>
+                        <button onclick="openStudentDetailModal('${st.id}')" class="pixel-btn pixel-btn-purple text-xs px-2 py-1.5 flex-1">
+                            📜 歷程
+                        </button>
+                        <button onclick="deleteStudent('${st.id}')" class="pixel-btn pixel-btn-red text-xs px-2 py-1.5" title="刪除學生">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openEditStudentModal(studentId) {
+            const st = appData.students.find(s => s.id === studentId);
+            if (!st) return;
+
+            document.getElementById('student-modal-title').textContent = '✏️ 編輯學生資訊與分組';
+            document.getElementById('edit-student-id').value = st.id;
+            document.getElementById('student-number').value = st.number;
+            document.getElementById('student-name').value = st.name;
+            document.getElementById('student-group').value = st.group || 1;
+            openModal('add-student-modal');
+        }
+
+        function handleSaveStudent(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-student-id').value;
+            const number = parseInt(document.getElementById('student-number').value);
+            const name = document.getElementById('student-name').value.trim();
+            const group = parseInt(document.getElementById('student-group').value) || 1;
+
+            if (editId) {
+                const st = appData.students.find(s => s.id === editId);
+                if (st) {
+                    st.number = number;
+                    st.name = name;
+                    st.group = group;
+                }
+            } else {
+                if (appData.students.some(s => s.number === number)) {
+                    alert(`座號 ${number} 號已經存在！請更換座號。`);
+                    return;
+                }
+                const newStudent = {
+                    id: 's_' + Date.now(),
+                    number: number,
+                    name: name,
+                    group: group,
+                    points: 0
+                };
+                appData.students.push(newStudent);
+            }
+
+            saveData();
+            renderAll();
+            closeModal('add-student-modal');
+        }
+
+        function deleteStudent(studentId) {
+            if (confirm('確定要刪除這位學生嗎？相關作業與點數歷史將一併清理。')) {
+                appData.students = appData.students.filter(s => s.id !== studentId);
+                appData.pointLogs = appData.pointLogs.filter(p => p.studentId !== studentId);
+                saveData();
+                renderAll();
+            }
+        }
+
+        function openPointModal(studentId) {
+            const st = appData.students.find(s => s.id === studentId);
+            if (!st) return;
+
+            document.getElementById('point-student-id').value = st.id;
+            document.getElementById('point-student-name').textContent = `${st.number}號 ${st.name} (第${st.group||1}組)`;
+            document.getElementById('point-value').value = '1';
+            document.getElementById('point-reason').value = '';
+            openModal('add-point-modal');
+        }
+
+        function handlePointAdjustment(e) {
+            e.preventDefault();
+            const studentId = document.getElementById('point-student-id').value;
+            const type = document.getElementById('point-type').value;
+            const value = parseInt(document.getElementById('point-value').value) || 0;
+            const reason = document.getElementById('point-reason').value.trim();
+
+            const st = appData.students.find(s => s.id === studentId);
+            if (!st) return;
+
+            const finalDelta = type === 'add' ? value : -value;
+            st.points += finalDelta;
+
+            appData.pointLogs.unshift({
+                id: 'pl_' + Date.now(),
+                studentId: studentId,
+                type: type,
+                value: value,
+                reason: reason,
+                date: getTodayString()
+            });
+
+            saveData();
+            renderStudents();
+            closeModal('add-point-modal');
+        }
+
+        function renderPunishments() {
+            const container = document.getElementById('punish-list-container');
+            container.innerHTML = '';
+
+            if (appData.punishments.length === 0) {
+                container.innerHTML = `
+                    <div class="pixel-box p-8 text-center text-gray-500">
+                        目前沒有罰寫登記項目。點擊右上角「➕ 新增罰寫項目」。
+                    </div>
+                `;
+                return;
+            }
+
+            appData.punishments.forEach(p => {
+                const totalAssigned = p.assignments.length;
+                const completedCount = p.assignments.filter(a => a.done).length;
+
+                const card = document.createElement('div');
+                card.className = 'pixel-box bg-white p-4 space-y-3';
+
+                card.innerHTML = `
+                    <div class="flex flex-wrap justify-between items-start border-b border-black pb-2 gap-2">
+                        <div>
+                            <h3 class="text-base md:text-lg font-bold text-red-700">${p.title}</h3>
+                            <p class="text-xs text-gray-600 mt-0.5">備註：${p.note || '無'}</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs bg-amber-100 border border-black px-2 py-1 rounded font-bold">
+                                完成進度：<span class="text-green-700">${completedCount}</span> / ${totalAssigned} 人
+                            </span>
+                            <button onclick="deletePunishment('${p.id}')" class="pixel-btn pixel-btn-red text-xs px-2 py-1" title="刪除罰寫項目">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-bold text-amber-900 mb-2">👇 需要寫這項罰寫的學生名單（點擊標記完成/消除）：</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                            ${renderPunishmentStudentBadges(p)}
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function renderPunishmentStudentBadges(punishment) {
+            if (punishment.assignments.length === 0) {
+                return `<div class="text-xs text-gray-500 col-span-full">未指派學生</div>`;
+            }
+
+            return punishment.assignments.map(assign => {
+                const st = appData.students.find(s => s.id === assign.studentId);
+                if (!st) return '';
+
+                const isDone = assign.done;
+                const groupNum = st.group || 1;
+                return `
+                    <div class="pixel-box-inset p-2 flex justify-between items-center group-border-${groupNum} ${isDone ? 'opacity-50 line-through bg-gray-100' : 'bg-white'}">
+                        <span class="text-xs font-bold ${isDone ? 'text-gray-400' : 'text-gray-800'}">
+                            第${groupNum}組 ${st.number}號 ${st.name}
+                        </span>
+                        <button onclick="togglePunishmentDone('${punishment.id}', '${st.id}')" class="pixel-btn ${isDone ? 'pixel-btn-gray' : 'pixel-btn-green'} text-xs px-2 py-0.5">
+                            ${isDone ? '↩️ 撤銷' : '✅ 完成'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function togglePunishmentDone(punishId, studentId) {
+            const punishment = appData.punishments.find(p => p.id === punishId);
+            if (punishment) {
+                const assign = punishment.assignments.find(a => a.studentId === studentId);
+                if (assign) {
+                    assign.done = !assign.done;
+                    saveData();
+                    renderPunishments();
+                }
+            }
+        }
+
+        function handleCreatePunishment(e) {
+            e.preventDefault();
+            const title = document.getElementById('punish-title').value.trim();
+            const note = document.getElementById('punish-note').value.trim();
+            const assignType = document.getElementById('punish-assign-type').value;
+
+            let assignedStudentIds = [];
+            if (assignType === 'all') {
+                assignedStudentIds = appData.students.map(s => s.id);
+            } else {
+                const checkboxes = document.querySelectorAll('#punish-students-checkboxes input[type="checkbox"]:checked');
+                checkboxes.forEach(cb => assignedStudentIds.push(cb.value));
+            }
+
+            if (assignedStudentIds.length === 0) {
+                alert('請至少勾選一位罰寫學生！');
+                return;
+            }
+
+            const assignments = assignedStudentIds.map(id => ({ studentId: id, done: false }));
+
+            const newPunishment = {
+                id: 'p_' + Date.now(),
+                title: title,
+                note: note,
+                assignments: assignments
+            };
+
+            appData.punishments.unshift(newPunishment);
+            saveData();
+            renderPunishments();
+            closeModal('add-punish-modal');
+            document.getElementById('punish-title').value = '';
+            document.getElementById('punish-note').value = '';
+        }
+
+        function deletePunishment(punishId) {
+            if (confirm('確定要刪除這項罰寫登記嗎？')) {
+                appData.punishments = appData.punishments.filter(p => p.id !== punishId);
+                saveData();
+                renderPunishments();
+            }
+        }
+
+        function openStudentDetailModal(studentId) {
+            const st = appData.students.find(s => s.id === studentId);
+            if (!st) return;
+
+            document.getElementById('detail-student-title').textContent = `第${st.group||1}組 ${st.number}號 ${st.name} - 個人檔案`;
+
+            const pointsContainer = document.getElementById('detail-points-list');
+            const studentLogs = appData.pointLogs.filter(p => p.studentId === studentId);
+
+            if (studentLogs.length === 0) {
+                pointsContainer.innerHTML = `<p class="text-gray-500 italic">尚無加扣點歷史紀錄。</p>`;
+            } else {
+                pointsContainer.innerHTML = studentLogs.map(log => `
+                    <div class="pixel-box-inset p-2 flex justify-between items-center">
+                        <div>
+                            <span class="text-gray-500 text-[10px] mr-2">${log.date}</span>
+                            <span class="font-bold text-gray-800">${log.reason}</span>
+                        </div>
+                        <span class="font-bold ${log.type === 'add' ? 'text-green-600' : 'text-red-600'}">
+                            ${log.type === 'add' ? '+' : '-'}${log.value}
+                        </span>
+                    </div>
+                `).join('');
+            }
+
+            const punishContainer = document.getElementById('detail-punish-list');
+            const myPunishments = [];
+
+            appData.punishments.forEach(p => {
+                const assign = p.assignments.find(a => a.studentId === studentId);
+                if (assign) {
+                    myPunishments.push({
+                        title: p.title,
+                        note: p.note,
+                        done: assign.done
+                    });
+                }
+            });
+
+            if (myPunishments.length === 0) {
+                punishContainer.innerHTML = `<p class="text-gray-500 italic">目前名下無任何罰寫項目。</p>`;
+            } else {
+                punishContainer.innerHTML = myPunishments.map(mp => `
+                    <div class="pixel-box-inset p-2.5 flex justify-between items-center ${mp.done ? 'opacity-50 line-through' : ''}">
+                        <div>
+                            <p class="font-bold text-red-700">${mp.title}</p>
+                            ${mp.note ? `<p class="text-[10px] text-gray-500">備註: ${mp.note}</p>` : ''}
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${mp.done ? 'bg-green-200 text-green-900 border border-green-500' : 'bg-red-200 text-red-900 border border-red-500'}">
+                            ${mp.done ? '已完成消除' : '未完成'}
+                        </span>
+                    </div>
+                `).join('');
+            }
+
+            openModal('student-detail-modal');
+        }
+
+        function renderAll() {
+            renderHomeworks();
+            renderStudents();
+            renderPunishments();
+            if (!document.getElementById('page-calendar').classList.contains('hidden')) {
+                renderCalendar();
+            }
+            if (!document.getElementById('page-group-miss').classList.contains('hidden')) {
+                renderGroupMissingView();
+            }
+        }
+
+        window.onload = function() {
+            loadData();
+            renderAll();
+        };
+    </script>
+</body>
+</html>
